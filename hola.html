@@ -1,0 +1,126 @@
+<script>
+let dataIntervalDoms = [];
+
+function onSearchIntervalDom(condition,action,timeLoop = 1000,maxTime = 3000,index = null){    
+    try{
+        if(index === null){ 
+            let newIndex = dataIntervalDoms.length;
+
+            dataIntervalDoms.push({
+                interval : null,
+                timeCount : 0
+            });
+
+            dataIntervalDoms[newIndex].interval = setInterval(function(){
+                if(condition()){
+                    action();
+
+                    if(dataIntervalDoms[newIndex].interval){
+                        clearInterval(dataIntervalDoms[newIndex].interval);
+                    }
+                }else{
+                    if(dataIntervalDoms[newIndex].interval){
+                        clearInterval(dataIntervalDoms[newIndex].interval);
+                    }
+
+                    onSearchIntervalDom(condition,action,timeLoop,maxTime,newIndex);
+                }
+            },timeLoop);                     
+        }else{
+            let dataInterval = dataIntervalDoms[index];
+
+            clearInterval(dataInterval.interval);
+
+            let newTimeCount = dataInterval.timeCount + timeLoop;
+
+            if(newTimeCount >= maxTime){
+                if(condition()){
+                    action();
+                }
+
+                if(!dataIntervalDoms.find(item => item.interval)){
+                    dataIntervalDoms.forEach(item => {
+                        if(item.interval){
+                            clearInterval(item.interval);
+                        }
+                    })
+
+                    dataIntervalDoms = [];
+                };
+
+                // console.log("Finished " + index);
+
+                return;   
+            }
+
+            if(condition()){
+                action();
+            
+                if(!dataIntervalDoms.find(item => item.interval)){
+                    dataIntervalDoms.forEach(item => {
+                        if(item.interval){
+                            clearInterval(item.interval);
+                        }
+                    })
+
+                    dataIntervalDoms = [];
+                };
+
+                // console.log("Founded " + index);
+
+                return;
+            }else{
+                // console.log("Searching " + index);
+
+                dataIntervalDoms[index].timeCount = newTimeCount;
+
+                dataIntervalDoms[index].interval = setInterval(function(){
+                    if(condition()){
+                        action();
+
+                        if(dataIntervalDoms[index].interval){
+                            clearInterval(dataIntervalDoms[index].interval);
+                        }
+                    }else{                    
+                        onSearchIntervalDom(condition,action,timeLoop,maxTime,index);
+                    }
+                },timeLoop);                        
+            }
+        }
+    }catch(err){
+        console.log(err);
+
+        dataIntervalDoms.forEach(item => {
+            if(item.interval){
+                clearInterval(item.interval);
+            }
+        })
+    }
+}
+
+onSearchIntervalDom(function(){
+    return false;
+},function(){
+    console.log('Am not search hola')
+},2000,10000);
+
+onSearchIntervalDom(function(){
+    return document.getElementById('hola')
+},function(){
+    console.log('hola found')
+},1000,5000);
+
+onSearchIntervalDom(function(){
+    return false;
+},function(){
+    console.log('Am not search hola')
+},1000,5000);
+
+setTimeout(() => {
+    const node = document.createElement("div");
+    const textnode = document.createTextNode("Water");
+    node.appendChild(textnode);
+    node.setAttribute("id","hola");
+    document.body.appendChild(node);
+},2000);
+</script>
